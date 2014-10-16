@@ -7,15 +7,40 @@ output:
 
 
 ## Loading and preprocessing the data
-
+```{r}
+# read csv file and convert to data.table frame.
+library(data.table)
+suppressWarnings(
+  unzip('activity.zip',files=NULL, list=FALSE, overwrite=FALSE))
+DT <- as.data.table(read.csv('activity.csv'))
+```
 
 
 ## What is mean total number of steps taken per day?
+```{r}
+# use data.table group-by function.
+# TSPD: Total Steps Per Day
+TSPD <- DT[,sum(steps, na.rm=TRUE), by=date]
+setnames(TSPD,2,'steps')
+```
+### histogram of steps
+```{r}
+hist(TSPD$steps,breaks=nrow(TSPD),col='red',
+      main='Total Number of Steps Per Day',
+      xlab='steps',ylim=c(0,12))
+```
 
+### mean & median
+```{r}
+mean(TSPD$steps)
+median(TSPD$steps)
+```
 
 
 ## What is the average daily activity pattern?
+```{r}
 
+```
 
 
 ## Imputing missing values
