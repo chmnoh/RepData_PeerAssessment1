@@ -38,13 +38,71 @@ median(TSPD$steps)
 
 
 ## What is the average daily activity pattern?
+### time series plot
 ```{r}
+avg_activity <- DT[,mean(steps, na.rm=TRUE), by=interval]
+setnames(avg_activity, 2, 'mean_steps')
+plot(x=avg_activity$interval, y=avg_activity$mean_steps, 
+     type="l",
+     main="Average Daily Activity Pattern",
+     xlab="5-min interval", ylab="average steps")
+```
+
+### finding the interval containing maximum number of steps 
+```{r}
+# to verify 
+max(avg_activity$mean_steps)
+max_row <- 
+  avg_activity[order(avg_activity$mean_steps,decreasing=TRUE)[1]]
+max_row
+max_row$interval
 
 ```
 
-
 ## Imputing missing values
+### total number of missing values in the dataset
+```{r}
+sum(is.na(DT$steps))
+```
 
+### filling missing values as median value
+```{r}
+med_activity <- DT[,median(steps, na.rm=TRUE), by=interval]
+setnames(med_activity, 2, 'median_steps')
+# make copy dataset
+DT2 <- as.data.table(read.csv('activity.csv'))
+# join with the key 'interval'
+setkey(DT2, interval)
+DT2[med_activity, steps := ifelse(is.na(steps),median_steps,steps)]
+```
 
+### imputed dataset histogram
+```{r}
+# use data.table group-by function.
+# TSPD: Total Steps Per Day
+TSPD2 <- DT2[,sum(steps), by=date]
+setnames(TSPD2,2,'steps')
+hist(TSPD2$steps,breaks=nrow(TSPD),col='red',
+      main='Total Number of Steps Per Day(imputed)',
+      xlab='steps',ylim=c(0,12))
+```
+
+### imputed dataset mean & median
+```{r}
+mean(TSPD2$steps)
+median(TSPD2$steps)
+```
+- No difference in median value between the original and the imputed, because the imputed missing values are median values.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+### create two-level factors("weekday","weekend") into the imputed dataset
+```{r}
+dayType <- list()
+dayType[["Sat"]] <- "weekend"
+dayType[["Sun"]] <- "weekend"
+dayType[["Mon"]] <- "weekday"
+dayType[["Tue"]] <- "weekday"
+dayType[["Wed"]] <- "weekday"
+dayType[["Thu"]] <- "weekday"
+dayType[["Fri"]] <- "weekday"
+```
