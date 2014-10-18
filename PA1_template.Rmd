@@ -97,12 +97,25 @@ median(TSPD2$steps)
 ## Are there differences in activity patterns between weekdays and weekends?
 ### create two-level factors("weekday","weekend") into the imputed dataset
 ```{r}
-dayType <- list()
-dayType[["Sat"]] <- "weekend"
-dayType[["Sun"]] <- "weekend"
-dayType[["Mon"]] <- "weekday"
-dayType[["Tue"]] <- "weekday"
-dayType[["Wed"]] <- "weekday"
-dayType[["Thu"]] <- "weekday"
-dayType[["Fri"]] <- "weekday"
+d_type <- list()
+d_type[["Sat"]] <- "weekend"
+d_type[["Sun"]] <- "weekend"
+d_type[["Mon"]] <- "weekday"
+d_type[["Tue"]] <- "weekday"
+d_type[["Wed"]] <- "weekday"
+d_type[["Thu"]] <- "weekday"
+d_type[["Fri"]] <- "weekday"
+Sys.setlocale(locale='C')
+DT2[,daytype:=as.character(d_type[weekdays(strptime(date,"%Y-%m-%d"), abbreviate=T)])]
+```
+
+### make panel plots (weekday vs. weekend)
+```{r}
+library(lattice)
+avg_steps_on_daytype <- DT2[,mean(steps,na.rm=T),by=list(interval,daytype)]
+setnames(avg_steps_on_daytype, 3, "avg_steps")
+dt.f <- factor(avg_steps_on_daytype$daytype, 
+               levels=c("weekend","weekday"))
+xyplot(avg_steps ~ interval|dt.f, 
+       data=avg_steps_on_daytype,type="l",layout=c(1,2),xlab="Interval",ylab="Number of steps")
 ```
